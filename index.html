@@ -1,26 +1,46 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WILLY TEA - Release Timeline</title>
+    <title>WILLY TEA - Official Site</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
-        * {
+        /*
+        -------------------------------------------------
+        GLOBAL & CORE LAYOUT STYLES
+        -------------------------------------------------
+        */
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --dark-bg: #0a0e27;
+        }
+        
+        * { 
+            /* Hide scrollbar for Chrome, Safari, and Opera */
+            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Hide scrollbar for Webkit */
+        *::-webkit-scrollbar {
+            display: none;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0e27;
-            min-height: 100vh;
-            padding: 20px;
+            background: var(--dark-bg);
             color: #fff;
-            overflow-x: hidden;
-            position: relative;
+            overflow: hidden; /* Important for the single-page scroll prevention */
         }
 
+        /* Fixed Background Canvas */
         #canvas-bg {
             position: fixed;
             top: 0;
@@ -28,7 +48,171 @@
             width: 100%;
             height: 100%;
             z-index: 0;
+            opacity: 0.7;
         }
+
+        /*
+        -------------------------------------------------
+        SPA CONTAINER & TRANSITION LOGIC
+        -------------------------------------------------
+        */
+        #page-container {
+            /* This container holds all pages side-by-side */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300vw; /* 3 pages (Home, Music, Timeline) * 100vw */
+            height: 100vh;
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.785, 0.135, 0.15, 0.86); /* Super smooth animation curve */
+            will-change: transform;
+            z-index: 5;
+        }
+
+        .page-section {
+            /* Each page takes up exactly 100vw width */
+            min-width: 100vw;
+            height: 100vh;
+            padding: 40px 40px;
+            padding-top: 120px; /* Space for the header/nav */
+            overflow-y: auto; /* Allow vertical scrolling within the page content */
+            position: relative;
+        }
+
+        /*
+        -------------------------------------------------
+        NAVIGATION MENU (Fixed)
+        -------------------------------------------------
+        */
+        #nav-menu {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 100;
+            /* Glassmorphism Effect */
+            background: rgba(102, 126, 234, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 20px 0 0 20px;
+            padding: 10px 15px;
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-left: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            #nav-menu {
+                top: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                transform: translateY(0);
+                flex-direction: row;
+                border-radius: 20px 20px 0 0;
+                padding: 10px 20px;
+                justify-content: space-around;
+                box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+                border-top: 1px solid rgba(102, 126, 234, 0.2);
+            }
+            .page-section {
+                padding-bottom: 80px; /* Adjust for bottom nav bar */
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            color: #a0aec0;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            color: #fff;
+            background: rgba(102, 126, 234, 0.15);
+            transform: scale(1.05);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+            border: 1px solid var(--primary-color);
+        }
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 2px;
+        }
+        
+        /*
+        -------------------------------------------------
+        REUSABLE COMPONENT STYLES
+        -------------------------------------------------
+        */
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-glass {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+        .card-glass:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        /*
+        -------------------------------------------------
+        HEADER & ARTIST IDENTITY
+        -------------------------------------------------
+        */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            z-index: 50;
+            background: rgba(10, 14, 39, 0.9);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .site-header h1 {
+            font-size: 2.5em;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+
+        /*
+        -------------------------------------------------
+        TIMELINE PAGE (Original Content CSS)
+        -------------------------------------------------
+        */
 
         .container {
             max-width: 1400px;
@@ -36,52 +220,38 @@
             position: relative;
             z-index: 1;
         }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: fadeIn 0.8s ease-in;
-        }
-
-        .header h1 {
+        .header h2 {
             font-size: 3.5em;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
             font-weight: 900;
         }
-
         .header .subtitle {
             font-size: 1.1em;
             color: #a0aec0;
             letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 40px;
         }
 
         .today-marker {
-            background: rgb(31 40 83 );
-            opacity: 0.55;
+            background: rgb(31 40 83);
+            opacity: 0.9;
             backdrop-filter: blur(2px);
             padding: 25px;
-            border-radius: 150px;
-            margin-bottom: 0px;
+            border-radius: 50px;
+            margin-bottom: 40px;
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
             gap: 18px;
-            animation: slideDown 0.8s ease-out;
-            border: 0x solid rgba(2, 16, 4, 0.3);
-            box-shadow: 0px 5px 500px rgba(102, 126, 234, 8.5);
+            box-shadow: 0px 5px 50px rgba(102, 126, 234, 0.5);
         }
 
         .stat-box {
             text-align: center;
             flex: 1;
-            min-width: 100px;
-            width: 50px;
-            background: rgb(31 40 83);
+            min-width: 130px;
+            padding: 10px;
         }
 
         .stat-box h3 {
@@ -95,10 +265,6 @@
         .stat-box .big-number {
             font-size: 1.8em;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .timeline {
@@ -117,26 +283,17 @@
             border-radius: 2px;
         }
 
-        .quarter {
-            margin-bottom: 60px;
-        }
-
         .quarter-header {
             text-align: center;
             font-size: 3em;
             margin-bottom: 30px;
             font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .event {
             display: flex;
             margin-bottom: 40px;
             position: relative;
-            animation: fadeIn 1s ease-in;
         }
 
         .event:nth-child(even) {
@@ -145,27 +302,24 @@
 
         .event-content {
             width: 45%;
-            background: rgba(102, 126, 234, 0.1);
-            backdrop-filter: blur(20px);
             padding: 25px;
             border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
             cursor: pointer;
-            border: 1px solid rgba(102, 126, 234, 0.2);
         }
 
-        .event-content:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
-            background: rgba(102, 126, 234, 0.2);
-            border-color: rgba(102, 126, 234, 0.5);
+        .event:nth-child(odd) .event-content {
+            margin-right: 5%;
+        }
+
+        .event:nth-child(even) .event-content {
+            margin-left: 5%;
         }
 
         .event-marker {
             width: 24px;
             height: 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             border-radius: 50%;
             position: absolute;
             left: 50%;
@@ -194,10 +348,7 @@
             font-size: 1.3em;
             font-weight: bold;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #fff;
         }
 
         .event-type {
@@ -236,23 +387,15 @@
         }
 
         .checklist {
-            background: rgba(102, 126, 234, 0.1);
-            backdrop-filter: blur(20px);
             padding: 30px;
             border-radius: 20px;
             margin-top: 40px;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
         }
 
         .checklist h2 {
             font-size: 2em;
             margin-bottom: 20px;
             text-align: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .checklist-item {
@@ -278,7 +421,7 @@
             width: 22px;
             height: 22px;
             cursor: pointer;
-            accent-color: #667eea;
+            accent-color: var(--primary-color);
         }
 
         .checklist-item.checked {
@@ -286,28 +429,11 @@
             text-decoration: line-through;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        /*
+        -------------------------------------------------
+        ANIMATIONS
+        -------------------------------------------------
+        */
         @keyframes pulse {
             0%, 100% {
                 box-shadow: 0 0 0 8px rgba(245, 87, 108, 0.3);
@@ -316,8 +442,23 @@
                 box-shadow: 0 0 0 15px rgba(245, 87, 108, 0.1);
             }
         }
-
+        
+        /*
+        -------------------------------------------------
+        MEDIA QUERIES (Responsive Design)
+        -------------------------------------------------
+        */
         @media (max-width: 768px) {
+            .page-section {
+                padding: 20px 20px;
+                padding-top: 100px; /* Space for the header/nav */
+                padding-bottom: 80px; /* Space for the bottom nav bar */
+            }
+
+            .site-header {
+                padding: 15px 20px;
+            }
+
             .timeline::before {
                 left: 30px;
             }
@@ -329,55 +470,254 @@
 
             .event-content {
                 width: 100%;
+                margin: 0 !important; /* Remove fixed margins */
             }
 
             .event-marker {
                 left: 30px;
             }
+            .today-marker {
+                border-radius: 20px;
+            }
+            .stat-box {
+                min-width: 45%;
+            }
+            .header h2 {
+                font-size: 2.5em;
+            }
+            .header .subtitle {
+                font-size: 0.9em;
+            }
+                   
         }
     </style>
+    <!-- FIREBASE MODULE IMPORTS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+
+        window.firebase = {
+            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, 
+            getFirestore, doc, setDoc, onSnapshot, setLogLevel
+        };
+    </script>
 </head>
 <body>
+    <!-- Background Canvas Animation -->
     <canvas id="canvas-bg"></canvas>
-    
-    <div class="container">
-        <div class="header">
-            <h2>WILLY TEA</h2>
-            <div class="subtitle">RELEASE TIMELINE 2025-2026</div>
-        </div>
 
-        <div class="today-marker">
-            <div class="stat-box">
-                <h3>DNES JE</h3>
-                <div class="big-number" id="today-date"></div>
-            </div>
-            <div class="stat-box">
-                <h3>DNÍ DO RELEASU</h3>
-                <div class="big-number" id="days-to-next"></div>
-            </div>
-            <div class="stat-box">
-                <h3>VYDÁNO TRACKŮ</h3>
-                <div class="big-number" id="released-tracks"></div>
-            </div>
-            <div class="stat-box">
-                <h3>CELKEM TRACKŮ</h3>
-                <div class="big-number" id="total-tracks"></div>
-            </div>
-        </div>
+    <!-- Site Header -->
+    <header class="site-header">
+        <h1 class="gradient-text">WILLY TEA</h1>
+        <div id="status-message" class="text-sm text-gray-400">Loading...</div>
+    </header>
 
-        <div class="timeline" id="timeline"></div>
-
-        <div class="checklist">
-            <h2>✅ CHECKLIST PRO DALŠÍ RELEASE</h2>
-            <div id="checklist-container"></div>
+    <!-- Navigation Menu (Fixed) -->
+    <nav id="nav-menu">
+        <div class="nav-item active" data-page="home-page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="hidden md:block">Home</span>
         </div>
-    </div>
+        <div class="nav-item" data-page="music-page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11"/><path d="M18 21V6"/><path d="M6 21v-3"/><path d="M21 21H3"/><path d="M15 9a2 2 0 0 0 2 2h4l-4-4-4-4v4l4 4"/><path d="M3 17h4l-4-4v4l4 4"/></svg>
+            <span class="hidden md:block">Music</span>
+        </div>
+        <div class="nav-item" data-page="timeline-page">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="hidden md:block">Timeline</span>
+        </div>
+    </nav>
+
+    <!-- MAIN PAGE CONTAINER -->
+    <main id="page-container">
+
+        <!-- 1. HOME PAGE (Index 0) -->
+        <section id="home-page" class="page-section flex items-center justify-center">
+            <div class="container max-w-4xl text-center">
+                <div class="w-40 h-40 mx-auto mb-8 bg-gray-800 rounded-full flex items-center justify-center border-4 border-purple-500 shadow-2xl">
+                    <span class="text-6xl">🎤</span>
+                </div>
+                <h2 class="text-6xl font-extrabold mb-4 leading-tight">
+                    <span class="gradient-text">The Sound of the Next Era.</span>
+                </h2>
+                <p class="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
+                    WILLY TEA blends Czech rap grit with international R&B polish, crafting narratives from Prague's streets to global playlists. This is more than music; it's a movement—a documented Level-Up.
+                </p>
+                <div class="flex justify-center gap-6">
+                    <button onclick="navigate('music-page')" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                        Listen Now
+                    </button>
+                    <button onclick="navigate('timeline-page')" class="px-8 py-3 bg-transparent border-2 border-purple-500 text-purple-300 font-bold rounded-full hover:bg-purple-500 hover:text-white transition duration-300 transform hover:scale-105">
+                        View The Plan
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MUSIC PAGE (Index 1) -->
+        <section id="music-page" class="page-section">
+            <div class="container">
+                <header class="header text-center">
+                    <h2 class="gradient-text">DISCOGRAPHY</h2>
+                    <div class="subtitle">Latest Releases & Featured Tracks</div>
+                </header>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Track 1: Latest Single -->
+                    <div class="card-glass p-6">
+                        <h3 class="text-2xl font-bold mb-2">Tea City (Single)</h3>
+                        <p class="text-sm text-purple-400 mb-4">Released 2025.10.28</p>
+                        <p class="text-gray-400 mb-4">The atmospheric launch point for the Willy Tea saga. Gritty, urban, and unapologetically Prague.</p>
+                        <a href="#" class="inline-block px-4 py-2 bg-pink-600 text-white rounded-full text-sm font-semibold hover:bg-pink-700 transition">Play on Spotify</a>
+                    </div>
+                    <!-- Track 2: Mixtape -->
+                    <div class="card-glass p-6">
+                        <h3 class="text-2xl font-bold mb-2">LEVEL-UP (Mixtape)</h3>
+                        <p class="text-sm text-purple-400 mb-4">Released 2025.12.20</p>
+                        <p class="text-gray-400 mb-4">12 tracks showcasing the artist's versatility across drill, trap, and melodic rap styles.</p>
+                        <a href="#" class="inline-block px-4 py-2 bg-pink-600 text-white rounded-full text-sm font-semibold hover:bg-pink-700 transition">View Tracklist</a>
+                    </div>
+                    <!-- Track 3: English Test -->
+                    <div class="card-glass p-6">
+                        <h3 class="text-2xl font-bold mb-2">English Track #1</h3>
+                        <p class="text-sm text-purple-400 mb-4">Released 2026.01.15</p>
+                        <p class="text-gray-400 mb-4">The first foray into the international market. A high-energy banger designed for global playlists.</p>
+                        <a href="#" class="inline-block px-4 py-2 bg-pink-600 text-white rounded-full text-sm font-semibold hover:bg-pink-700 transition">Stream Now</a>
+                    </div>
+                    <!-- Track 4: Collaboration -->
+                    <div class="card-glass p-6">
+                        <h3 class="text-2xl font-bold mb-2">Hype Single</h3>
+                        <p class="text-sm text-purple-400 mb-4">Upcoming: 2026.04.15</p>
+                        <p class="text-gray-400 mb-4">A powerful collaboration aimed at generating major pre-album buzz. Expect a heavy drop.</p>
+                        <a href="#" class="inline-block px-4 py-2 bg-gray-700 text-gray-300 rounded-full text-sm font-semibold cursor-not-allowed">Pre-Save Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 3. TIMELINE PAGE (Index 2 - Original Content) -->
+        <section id="timeline-page" class="page-section">
+            <div class="container">
+                <div class="header text-center">
+                    <h2 class="gradient-text">RELEASE TIMELINE</h2>
+                    <div class="subtitle">2025-2026 ROADMAP</div>
+                </div>
+
+                <div class="today-marker">
+                    <div class="stat-box">
+                        <h3>DNES JE</h3>
+                        <div class="big-number gradient-text" id="today-date"></div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>DNÍ DO RELEASU</h3>
+                        <div class="big-number gradient-text" id="days-to-next"></div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>VYDÁNO TRACKŮ</h3>
+                        <div class="big-number gradient-text" id="released-tracks"></div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>CELKEM TRACKŮ</h3>
+                        <div class="big-number gradient-text" id="total-tracks"></div>
+                    </div>
+                </div>
+
+                <div class="timeline" id="timeline"></div>
+
+                <div class="checklist card-glass">
+                    <h2 class="gradient-text">✅ CHECKLIST PRO DALŠÍ RELEASE</h2>
+                    <div id="checklist-container">
+                        <p class="text-center text-gray-400" id="checklist-status">Načítání checklistu...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
 
     <script>
+        /*
+        -------------------------------------------------
+        FIREBASE INITIALIZATION (New Practical Addon)
+        -------------------------------------------------
+        */
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        async function initFirebaseAndAuth() {
+            // Wait for module imports to complete
+            if (!window.firebase) {
+                setTimeout(initFirebaseAndAuth, 100);
+                return;
+            }
+
+            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, setLogLevel } = window.firebase;
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config not found.");
+                document.getElementById('checklist-status').textContent = "Chyba: Firebase config nenalezen.";
+                return;
+            }
+
+            try {
+                // setLogLevel('Debug'); // Enable for verbose console logs
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Handle authentication
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // Set up auth state listener to get the userId
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                    } else {
+                        // Use a persistent random ID for anonymous fallback
+                        userId = localStorage.getItem('anon_user_id') || crypto.randomUUID();
+                        localStorage.setItem('anon_user_id', userId);
+                    }
+                    isAuthReady = true;
+                    console.log("Auth ready. User ID:", userId);
+                    document.getElementById('checklist-status').textContent = "Checklist připraven (Uživatelské ID: " + userId.substring(0, 8) + "...)";
+                    initChecklist(); // Initialize the checklist using the authenticated state
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.getElementById('checklist-status').textContent = "Chyba při inicializaci Firebase.";
+            }
+        }
+
+
+        /*
+        -------------------------------------------------
+        CORE APP DATA
+        -------------------------------------------------
+        */
         const releases = [
-            { date: '2025-10-28', type: 'Single', title: 'Tea City', description: 'Start příběhu, první indície, začátek "filmu"', quarter: '2025 Q4', tracks: 1 },
-            { date: '2025-11-15', type: 'Promo', title: 'Teasery pro Mixtape', description: 'Build-up kampaň, highlighty, video snippety', quarter: '2025 Q4', tracks: 0 },
-            { date: '2025-12-20', type: 'Mixtape', title: 'LEVEL-UP', description: '11 tracků – první velkej projekt, ukázka identity rappera. Film trailer style promo.', quarter: '2025 Q4', tracks: 11 },
+            // Using a date in the past for testing 'released' status
+            { date: '2025-09-01', type: 'Single', title: 'Vintage Tea', description: 'Hidden vault track.', quarter: '2025 Q3', tracks: 1 },
+            { date: '2025-10-28', type: 'Single', title: 'Tea City', description: 'Start příběhu: Willy Tea v Praze <br>Všechno někde začíná a tento příběh začíná tady', quarter: '2025 Q4', tracks: 1 },
+            { date: '2025-11-15', type: 'Promo', title: 'Teasery pro Mixtape', description: 'Již brzy', quarter: '2025 Q4', tracks: 0 },
+            { date: '2025-12-20', type: 'Mixtape', title: 'LEVEL-UP', description: 'První velkej projekt, ukázka identity', quarter: '2025 Q4', tracks: 12 },
+            // Setting a future date near the end of 2025 for 'today' testing (Adjust this if needed)
+            // Example: If today's date is 2025-12-10, this is 'upcoming'. If today's date is 2025-10-28, this is 'today'.
+            { date: '2025-12-25', type: 'Single', title: 'Vánoční Banger', description: 'Speciální vánoční track.', quarter: '2025 Q4', tracks: 1 },
+
             { date: '2026-01-15', type: 'Single', title: 'Anglický track #1', description: 'Rozšířit publikum ven, test playlistů', quarter: '2026 Q1', tracks: 1 },
             { date: '2026-02-15', type: 'Single', title: 'Anglický track #2', description: 'Jiný vibe než #1, kontrast pro momentum', quarter: '2026 Q1', tracks: 1 },
             { date: '2026-03-20', type: 'EP', title: 'České EP', description: '5–6 tracků, rap/underground, příběh pokračuje', quarter: '2026 Q1', tracks: 6 },
@@ -405,11 +745,69 @@
             'Naplánovat release day aktivitu'
         ];
 
-        // Canvas animation
+
+        /*
+        -------------------------------------------------
+        SPA NAVIGATION LOGIC
+        -------------------------------------------------
+        */
+        let currentPageIndex = 0;
+        const pageMap = {
+            'home-page': 0,
+            'music-page': 1,
+            'timeline-page': 2
+        };
+        const pageContainer = document.getElementById('page-container');
+        const navItems = document.querySelectorAll('.nav-item');
+        const statusMessage = document.getElementById('status-message');
+
+        function updateNavMenu() {
+            navItems.forEach(item => {
+                const pageId = item.getAttribute('data-page');
+                if (pageMap[pageId] === currentPageIndex) {
+                    item.classList.add('active');
+                    // Display the current page name
+                    statusMessage.textContent = item.querySelector('span').textContent.toUpperCase();
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function navigate(pageId) {
+            const newIndex = pageMap[pageId];
+            if (newIndex !== undefined && newIndex !== currentPageIndex) {
+                currentPageIndex = newIndex;
+                // CSS transformation to slide the page container left or right
+                pageContainer.style.transform = `translateX(-${newIndex * 100}vw)`;
+                updateNavMenu();
+            }
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageId = item.getAttribute('data-page');
+                navigate(pageId);
+            });
+        });
+
+
+        /*
+        -------------------------------------------------
+        CANVAS ANIMATION LOGIC (Retained & Enhanced)
+        -------------------------------------------------
+        */
         const canvas = document.getElementById('canvas-bg');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        
+        // Ensure canvas dimensions are set correctly on load and resize
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles.forEach(p => p.reset()); // Re-render the particle positions
+        }
+        window.addEventListener('resize', resizeCanvas);
+
 
         let particles = [];
         let dancers = [];
@@ -428,18 +826,19 @@
                 this.speedX = Math.random() * 0.5 - 0.25;
                 this.speedY = Math.random() * 0.5 - 0.25;
                 this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = Math.random() > 0.5 ? 'rgba(102, 126, 234, ' : 'rgba(118, 75, 162, ';
             }
 
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
+                this.x += this.speedX * (1 + bassLevel * 2); /* Speed reacts to bass */
+                this.y += this.speedY * (1 + bassLevel * 2);
 
                 if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
 
             draw() {
-                ctx.fillStyle = `rgba(102, 126, 234, ${this.opacity})`;
+                ctx.fillStyle = this.color + this.opacity + ')';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -458,6 +857,7 @@
                 this.bounceSpeed = 0.1 + Math.random() * 0.1;
                 this.phase = Math.random() * Math.PI * 2;
                 this.leaving = false;
+                this.hue = Math.random() * 360;
             }
 
             update() {
@@ -467,17 +867,18 @@
                 } else {
                     this.y += (this.targetY - this.y) * 0.05;
                     this.opacity += (this.targetOpacity - this.opacity) * 0.05;
-                    this.bounceOffset = Math.sin(Date.now() * this.bounceSpeed * 0.01 + this.phase) * bassLevel * 20;
+                    this.bounceOffset = Math.sin(Date.now() * this.bounceSpeed * 0.01 + this.phase) * (0.5 + bassLevel) * 20;
                 }
             }
 
             draw() {
+                const color = `hsl(${this.hue}, 70%, 70%)`;
                 ctx.save();
-                ctx.globalAlpha = this.opacity;
+                ctx.globalAlpha = this.opacity * (0.5 + bassLevel * 0.5); /* Opacity reacts to bass */
                 ctx.translate(this.x, this.y + this.bounceOffset);
 
                 // Simple silhouette
-                ctx.fillStyle = '#667eea';
+                ctx.fillStyle = color;
                 
                 // Head
                 ctx.beginPath();
@@ -493,7 +894,8 @@
                 ctx.moveTo(0, -this.size * 0.2);
                 ctx.lineTo(-this.size * 0.4, -this.size * 0.1 + Math.sin(armAngle) * 10);
                 ctx.lineWidth = this.size * 0.15;
-                ctx.strokeStyle = '#667eea';
+                ctx.strokeStyle = color;
+                ctx.lineCap = 'round';
                 ctx.stroke();
                 
                 ctx.beginPath();
@@ -505,12 +907,6 @@
             }
         }
 
-        // Initialize particles
-        for (let i = 0; i < 50; i++) {
-            particles.push(new Particle());
-        }
-
-        // Connect particles
         function connectParticles() {
             for (let i = 0; i < particles.length; i++) {
                 for (let j = i + 1; j < particles.length; j++) {
@@ -520,7 +916,7 @@
 
                     if (distance < 120) {
                         ctx.strokeStyle = `rgba(102, 126, 234, ${0.15 * (1 - distance / 120)})`;
-                        ctx.lineWidth = 1;
+                        ctx.lineWidth = 1 + bassLevel * 2; /* Line thickness reacts to bass */
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
@@ -533,13 +929,14 @@
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Update bass level
+            // Simulate music bass fluctuation
             const time = Date.now() * 0.001;
-            targetBass = (Math.sin(time * 0.3) + 1) * 0.5;
-            bassLevel += (targetBass - bassLevel) * 0.05;
+            // Target bass jumps between 0 and 1, smoothed
+            targetBass = (Math.sin(time * 0.5) + 1) * 0.5;
+            bassLevel += (targetBass - bassLevel) * 0.1;
             
             // Spawn dancers when bass is high
-            if (bassLevel > 0.6 && dancers.length < 15 && Math.random() < 0.05) {
+            if (bassLevel > 0.7 && dancers.length < 10 && Math.random() < 0.03) {
                 dancers.push(new Dancer());
             }
             
@@ -560,20 +957,24 @@
             dancers = dancers.filter(d => {
                 d.update();
                 d.draw();
+                // Filter out dancers that have left the screen
                 return d.opacity > 0 && d.y < canvas.height + 100;
             });
             
             requestAnimationFrame(animate);
         }
 
-        animate();
+        // Initialize particles
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
 
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
 
-        // Timeline logic
+        /*
+        -------------------------------------------------
+        TIMELINE DATA LOGIC (Original)
+        -------------------------------------------------
+        */
         function calculateDays(dateString) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -592,12 +993,12 @@
 
         function initTimeline() {
             const today = new Date();
-            const todayStr = today.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long' });
+            const todayStr = today.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('today-date').textContent = todayStr;
 
-            const upcomingReleases = releases.filter(r => calculateDays(r.date) >= 0);
+            const upcomingReleases = releases.filter(r => calculateDays(r.date) >= 0).sort((a, b) => new Date(a.date) - new Date(b.date));
             const nextRelease = upcomingReleases.length > 0 ? upcomingReleases[0] : null;
-            const daysToNext = nextRelease ? calculateDays(nextRelease.date) : 0;
+            const daysToNext = nextRelease ? calculateDays(nextRelease.date) : 'N/A';
             document.getElementById('days-to-next').textContent = daysToNext;
 
             const releasedCount = releases.filter(r => calculateDays(r.date) < 0).reduce((sum, r) => sum + r.tracks, 0);
@@ -609,14 +1010,14 @@
             const timeline = document.getElementById('timeline');
             let currentQuarter = '';
 
-            releases.forEach((release, index) => {
+            releases.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach((release) => {
                 const days = calculateDays(release.date);
                 const status = getStatus(days);
 
                 if (release.quarter !== currentQuarter) {
                     currentQuarter = release.quarter;
                     const quarterDiv = document.createElement('div');
-                    quarterDiv.className = 'quarter-header';
+                    quarterDiv.className = 'quarter-header gradient-text';
                     quarterDiv.textContent = currentQuarter;
                     timeline.appendChild(quarterDiv);
                 }
@@ -629,15 +1030,15 @@
 
                 let daysText = '';
                 if (status === 'today') {
-                    daysText = '<div class="days-until">🔥 DNES! 🔥</div>';
+                    daysText = '<div class="days-until bg-red-800/30 border-red-500/50">🔥 DNES! 🔥</div>';
                 } else if (status === 'upcoming') {
-                    daysText = `<div class="days-until">📅 Za ${days} dní</div>`;
+                    daysText = `<div class="days-until bg-green-800/30 border-green-500/50">📅 Za ${days} dní</div>`;
                 } else {
-                    daysText = '<div class="days-until">✅ Vydáno</div>';
+                    daysText = '<div class="days-until bg-gray-800/30 border-gray-500/50">✅ Vydáno</div>';
                 }
 
                 eventDiv.innerHTML = `
-                    <div class="event-content">
+                    <div class="event-content card-glass">
                         <div class="event-date">${dateStr}</div>
                         <div class="event-type">${release.type}${release.tracks > 0 ? ` • ${release.tracks} tracks` : ''}</div>
                         <div class="event-title">${release.title}</div>
@@ -650,42 +1051,39 @@
                 timeline.appendChild(eventDiv);
             });
         }
+        
+        /*
+        -------------------------------------------------
+        CHECKLIST PERSISTENCE (Firestore)
+        -------------------------------------------------
+        */
+        function getChecklistItemRef(index) {
+            const { doc } = window.firebase;
+            if (!db || !userId) {
+                console.error("Firestore or User ID not available.");
+                return null;
+            }
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            // Private path: /artifacts/{appId}/users/{userId}/artist_checklist/{index}
+            return doc(db, `artifacts/${appId}/users/${userId}/artist_checklist`, String(index));
+        }
 
         function initChecklist() {
-            const container = document.getElementById('checklist-container');
-            
-            // Load saved checklist state
-            let saved = {};
-            try {
-                const savedData = window.fs_checklistState || {};
-                saved = savedData;
-            } catch (e) {
-                saved = {};
-            }
+            const { onSnapshot, setDoc } = window.firebase;
 
+            if (!isAuthReady) return;
+
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = ''; // Clear previous loading state
+
+            // Create and manage UI elements based on Firestore data
             checklistItems.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'checklist-item';
-                if (saved[index]) {
-                    itemDiv.classList.add('checked');
-                }
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.checked = saved[index] || false;
-                checkbox.addEventListener('change', (e) => {
-                    saved[index] = e.target.checked;
-                    
-                    // Save to memory
-                    window.fs_checklistState = saved;
-                    
-                    if (e.target.checked) {
-                        itemDiv.classList.add('checked');
-                    } else {
-                        itemDiv.classList.remove('checked');
-                    }
-                });
-
+                
                 const label = document.createElement('span');
                 label.textContent = item;
 
@@ -693,16 +1091,74 @@
                 itemDiv.appendChild(label);
                 container.appendChild(itemDiv);
 
+                const docRef = getChecklistItemRef(index);
+                if (!docRef) return;
+
+
+                // 1. Setup Firestore Listener (Real-time read)
+                onSnapshot(docRef, (docSnap) => {
+                    const isChecked = docSnap.exists() && docSnap.data().checked === true;
+
+                    // Update UI based on Firestore data
+                    checkbox.checked = isChecked;
+                    if (isChecked) {
+                        itemDiv.classList.add('checked');
+                    } else {
+                        itemDiv.classList.remove('checked');
+                    }
+                }, (error) => {
+                    console.error("Error reading checklist item from Firestore:", error);
+                });
+
+
+                // 2. Setup Change Handler (Write to Firestore)
+                const handleUpdate = async (isChecked) => {
+                    try {
+                        // Use setDoc to overwrite or create the document
+                        await setDoc(docRef, { 
+                            item_id: index, 
+                            text: item,
+                            checked: isChecked,
+                            updated_at: new Date().toISOString()
+                        });
+                        // UI update happens automatically via the onSnapshot listener above
+                    } catch (e) {
+                        console.error("Error writing document to Firestore: ", e);
+                    }
+                };
+                
+                checkbox.addEventListener('change', (e) => {
+                    handleUpdate(e.target.checked);
+                });
+
+                // Allows clicking anywhere on the item to toggle the checkbox
                 itemDiv.addEventListener('click', (e) => {
                     if (e.target !== checkbox) {
-                        checkbox.click();
+                        checkbox.checked = !checkbox.checked;
+                        handleUpdate(checkbox.checked);
                     }
                 });
             });
         }
 
-        initTimeline();
-        initChecklist();
+
+        // Global setup on window load
+        window.onload = function() {
+            // Set initial canvas size
+            resizeCanvas();
+            
+            // Set initial page to Home
+            navigate('home-page');
+            
+            // Start the canvas animation
+            animate();
+            
+            // Initialize timeline data
+            initTimeline();
+            
+            // Initialize Firebase and start the persistent checklist
+            initFirebaseAndAuth();
+        }
     </script>
 </body>
 </html>
