@@ -1,0 +1,708 @@
+Put your HTML text here<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WILLY TEA - Release Timeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-weight: 900;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #a0aec0;
+            letter-spacing: 2px;
+        }
+
+        .today-marker {
+            background: rgb(31 40 83 );
+            opacity: 0.55;
+            backdrop-filter: blur(2px);
+            padding: 25px;
+            border-radius: 150px;
+            margin-bottom: 0px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 18px;
+            animation: slideDown 0.8s ease-out;
+            border: 0x solid rgba(2, 16, 4, 0.3);
+            box-shadow: 0px 5px 500px rgba(102, 126, 234, 8.5);
+        }
+
+        .stat-box {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            width: 50px;
+            background: rgb(31 40 83);
+        }
+
+        .stat-box h3 {
+            font-size: 0.8em;
+            color: #a0aec0;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-box .big-number {
+            font-size: 1.8em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+            border-radius: 2px;
+        }
+
+        .quarter {
+            margin-bottom: 60px;
+        }
+
+        .quarter-header {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .event {
+            display: flex;
+            margin-bottom: 40px;
+            position: relative;
+            animation: fadeIn 1s ease-in;
+        }
+
+        .event:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .event-content {
+            width: 45%;
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .event-content:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .event-marker {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 30px;
+            box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.2);
+            z-index: 10;
+        }
+
+        .event.today .event-marker {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 8px rgba(245, 87, 108, 0.3);
+        }
+
+        .event.upcoming .event-marker {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .event.released .event-marker {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            opacity: 0.6;
+        }
+
+        .event-date {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .event-type {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(102, 126, 234, 0.25);
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #e0e7ff;
+            border: 1px solid rgba(102, 126, 234, 0.4);
+        }
+
+        .event-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .event-description {
+            color: #cbd5e0;
+            line-height: 1.6;
+        }
+
+        .days-until {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .checklist {
+            background: rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 40px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        .checklist h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .checklist-item {
+            background: rgba(102, 126, 234, 0.08);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+        }
+
+        .checklist-item:hover {
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .checklist-item.checked {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 8px rgba(245, 87, 108, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(245, 87, 108, 0.1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+
+            .event {
+                flex-direction: column !important;
+                padding-left: 60px;
+            }
+
+            .event-content {
+                width: 100%;
+            }
+
+            .event-marker {
+                left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-bg"></canvas>
+    
+    <div class="container">
+        <div class="header">
+            <h2>WILLY TEA</h2>
+            <div class="subtitle">RELEASE TIMELINE 2025-2026</div>
+        </div>
+
+        <div class="today-marker">
+            <div class="stat-box">
+                <h3>DNES JE</h3>
+                <div class="big-number" id="today-date"></div>
+            </div>
+            <div class="stat-box">
+                <h3>DNÍ DO RELEASU</h3>
+                <div class="big-number" id="days-to-next"></div>
+            </div>
+            <div class="stat-box">
+                <h3>VYDÁNO TRACKŮ</h3>
+                <div class="big-number" id="released-tracks"></div>
+            </div>
+            <div class="stat-box">
+                <h3>CELKEM TRACKŮ</h3>
+                <div class="big-number" id="total-tracks"></div>
+            </div>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+
+        <div class="checklist">
+            <h2>✅ CHECKLIST PRO DALŠÍ RELEASE</h2>
+            <div id="checklist-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const releases = [
+            { date: '2025-10-28', type: 'Single', title: 'Tea City', description: 'Start příběhu, první indície, začátek "filmu"', quarter: '2025 Q4', tracks: 1 },
+            { date: '2025-11-15', type: 'Promo', title: 'Teasery pro Mixtape', description: 'Build-up kampaň, highlighty, video snippety', quarter: '2025 Q4', tracks: 0 },
+            { date: '2025-12-20', type: 'Mixtape', title: 'LEVEL-UP', description: '11 tracků – první velkej projekt, ukázka identity rappera. Film trailer style promo.', quarter: '2025 Q4', tracks: 11 },
+            { date: '2026-01-15', type: 'Single', title: 'Anglický track #1', description: 'Rozšířit publikum ven, test playlistů', quarter: '2026 Q1', tracks: 1 },
+            { date: '2026-02-15', type: 'Single', title: 'Anglický track #2', description: 'Jiný vibe než #1, kontrast pro momentum', quarter: '2026 Q1', tracks: 1 },
+            { date: '2026-03-20', type: 'EP', title: 'České EP', description: '5–6 tracků, rap/underground, příběh pokračuje', quarter: '2026 Q1', tracks: 6 },
+            { date: '2026-04-15', type: 'Single', title: 'Hype Single', description: 'Příprava na další větší release', quarter: '2026 Q2', tracks: 1 },
+            { date: '2026-05-20', type: 'Mixtape', title: 'Underground Mixtape 2', description: '7–9 tracků, rap/grime/trap zásoby', quarter: '2026 Q2', tracks: 8 },
+            { date: '2026-06-15', type: 'Single', title: 'Přechodový Single', description: 'Může být featuring', quarter: '2026 Q2', tracks: 1 },
+            { date: '2026-07-15', type: 'Single', title: 'R&B/Anglický vibe', description: 'První vážnější nástřel R&B', quarter: '2026 Q3', tracks: 1 },
+            { date: '2026-08-20', type: 'Album', title: 'Album 1 (EN)', description: '20 tracků - debut international project', quarter: '2026 Q3', tracks: 20 },
+            { date: '2026-09-15', type: 'Single', title: 'Remix/Collab', description: 'Udržet momentum po albu', quarter: '2026 Q3', tracks: 1 },
+            { date: '2026-10-15', type: 'Single', title: 'Emotivní Single', description: 'Navázat na nový sound', quarter: '2026 Q4', tracks: 1 },
+            { date: '2026-11-20', type: 'Album', title: 'Album 2 (EN)', description: '20 tracků - druhé anglické album, posun do R&B/hip-hop/pop', quarter: '2026 Q4', tracks: 20 },
+            { date: '2026-12-20', type: 'Single', title: 'Vánoční Bonus', description: 'Fan servis, freestyle nebo bonus track', quarter: '2026 Q4', tracks: 1 }
+        ];
+
+        const checklistItems = [
+            'Finalizovat master tracku',
+            'Vytvořit cover art',
+            'Nahrát promo video/teaser',
+            'Připravit texty pro sociální sítě',
+            'Nastavit pre-save kampaň',
+            'Kontaktovat playlisty a kurátory',
+            'Připravit press kit',
+            'Nahrát track na distribuci (minimálně 2 týdny předem)',
+            'Vytvořit Instagram/TikTok content (3-5 postů)',
+            'Naplánovat release day aktivitu'
+        ];
+
+        // Canvas animation
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particles = [];
+        let dancers = [];
+        let bassLevel = 0;
+        let targetBass = 0;
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(102, 126, 234, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        class Dancer {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.targetY = canvas.height - 100 - Math.random() * 200;
+                this.size = 30 + Math.random() * 20;
+                this.opacity = 0;
+                this.targetOpacity = 0.3 + Math.random() * 0.3;
+                this.bounceOffset = 0;
+                this.bounceSpeed = 0.1 + Math.random() * 0.1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.leaving = false;
+            }
+
+            update() {
+                if (this.leaving) {
+                    this.y += 2;
+                    this.opacity -= 0.02;
+                } else {
+                    this.y += (this.targetY - this.y) * 0.05;
+                    this.opacity += (this.targetOpacity - this.opacity) * 0.05;
+                    this.bounceOffset = Math.sin(Date.now() * this.bounceSpeed * 0.01 + this.phase) * bassLevel * 20;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.translate(this.x, this.y + this.bounceOffset);
+
+                // Simple silhouette
+                ctx.fillStyle = '#667eea';
+                
+                // Head
+                ctx.beginPath();
+                ctx.arc(0, -this.size * 0.7, this.size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Body
+                ctx.fillRect(-this.size * 0.2, -this.size * 0.4, this.size * 0.4, this.size * 0.6);
+                
+                // Arms (moving)
+                const armAngle = Math.sin(Date.now() * this.bounceSpeed * 0.01 + this.phase) * 0.5;
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size * 0.2);
+                ctx.lineTo(-this.size * 0.4, -this.size * 0.1 + Math.sin(armAngle) * 10);
+                ctx.lineWidth = this.size * 0.15;
+                ctx.strokeStyle = '#667eea';
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, -this.size * 0.2);
+                ctx.lineTo(this.size * 0.4, -this.size * 0.1 - Math.sin(armAngle) * 10);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+
+        // Initialize particles
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+
+        // Connect particles
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 120) {
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${0.15 * (1 - distance / 120)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update bass level
+            const time = Date.now() * 0.001;
+            targetBass = (Math.sin(time * 0.3) + 1) * 0.5;
+            bassLevel += (targetBass - bassLevel) * 0.05;
+            
+            // Spawn dancers when bass is high
+            if (bassLevel > 0.6 && dancers.length < 15 && Math.random() < 0.05) {
+                dancers.push(new Dancer());
+            }
+            
+            // Remove dancers when bass is low
+            if (bassLevel < 0.3) {
+                dancers.forEach(d => d.leaving = true);
+            }
+            
+            // Update and draw particles
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            connectParticles();
+            
+            // Update and draw dancers
+            dancers = dancers.filter(d => {
+                d.update();
+                d.draw();
+                return d.opacity > 0 && d.y < canvas.height + 100;
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Timeline logic
+        function calculateDays(dateString) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const targetDate = new Date(dateString);
+            targetDate.setHours(0, 0, 0, 0);
+            const diffTime = targetDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function getStatus(days) {
+            if (days === 0) return 'today';
+            if (days < 0) return 'released';
+            return 'upcoming';
+        }
+
+        function initTimeline() {
+            const today = new Date();
+            const todayStr = today.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long' });
+            document.getElementById('today-date').textContent = todayStr;
+
+            const upcomingReleases = releases.filter(r => calculateDays(r.date) >= 0);
+            const nextRelease = upcomingReleases.length > 0 ? upcomingReleases[0] : null;
+            const daysToNext = nextRelease ? calculateDays(nextRelease.date) : 0;
+            document.getElementById('days-to-next').textContent = daysToNext;
+
+            const releasedCount = releases.filter(r => calculateDays(r.date) < 0).reduce((sum, r) => sum + r.tracks, 0);
+            document.getElementById('released-tracks').textContent = releasedCount;
+
+            const totalTracks = releases.reduce((sum, r) => sum + r.tracks, 0);
+            document.getElementById('total-tracks').textContent = totalTracks;
+
+            const timeline = document.getElementById('timeline');
+            let currentQuarter = '';
+
+            releases.forEach((release, index) => {
+                const days = calculateDays(release.date);
+                const status = getStatus(days);
+
+                if (release.quarter !== currentQuarter) {
+                    currentQuarter = release.quarter;
+                    const quarterDiv = document.createElement('div');
+                    quarterDiv.className = 'quarter-header';
+                    quarterDiv.textContent = currentQuarter;
+                    timeline.appendChild(quarterDiv);
+                }
+
+                const eventDiv = document.createElement('div');
+                eventDiv.className = `event ${status}`;
+                
+                const releaseDate = new Date(release.date);
+                const dateStr = releaseDate.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long' });
+
+                let daysText = '';
+                if (status === 'today') {
+                    daysText = '<div class="days-until">🔥 DNES! 🔥</div>';
+                } else if (status === 'upcoming') {
+                    daysText = `<div class="days-until">📅 Za ${days} dní</div>`;
+                } else {
+                    daysText = '<div class="days-until">✅ Vydáno</div>';
+                }
+
+                eventDiv.innerHTML = `
+                    <div class="event-content">
+                        <div class="event-date">${dateStr}</div>
+                        <div class="event-type">${release.type}${release.tracks > 0 ? ` • ${release.tracks} tracks` : ''}</div>
+                        <div class="event-title">${release.title}</div>
+                        <div class="event-description">${release.description}</div>
+                        ${daysText}
+                    </div>
+                    <div class="event-marker"></div>
+                `;
+
+                timeline.appendChild(eventDiv);
+            });
+        }
+
+        function initChecklist() {
+            const container = document.getElementById('checklist-container');
+            
+            // Load saved checklist state
+            let saved = {};
+            try {
+                const savedData = window.fs_checklistState || {};
+                saved = savedData;
+            } catch (e) {
+                saved = {};
+            }
+
+            checklistItems.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'checklist-item';
+                if (saved[index]) {
+                    itemDiv.classList.add('checked');
+                }
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = saved[index] || false;
+                checkbox.addEventListener('change', (e) => {
+                    saved[index] = e.target.checked;
+                    
+                    // Save to memory
+                    window.fs_checklistState = saved;
+                    
+                    if (e.target.checked) {
+                        itemDiv.classList.add('checked');
+                    } else {
+                        itemDiv.classList.remove('checked');
+                    }
+                });
+
+                const label = document.createElement('span');
+                label.textContent = item;
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                container.appendChild(itemDiv);
+
+                itemDiv.addEventListener('click', (e) => {
+                    if (e.target !== checkbox) {
+                        checkbox.click();
+                    }
+                });
+            });
+        }
+
+        initTimeline();
+        initChecklist();
+    </script>
+</body>
+</html>
